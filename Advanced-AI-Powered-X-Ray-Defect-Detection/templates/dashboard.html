@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | MedScan AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .dashboard-header {
+            background: var(--card-bg);
+            padding: 20px 0;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .dashboard-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .dashboard-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon.total { color: var(--secondary); }
+        .stat-icon.defective { color: var(--danger); }
+        .stat-icon.normal { color: var(--success); }
+        .stat-icon.accuracy { color: var(--accent); }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .stat-value.total { color: var(--secondary); }
+        .stat-value.defective { color: var(--danger); }
+        .stat-value.normal { color: var(--success); }
+        .stat-value.accuracy { color: var(--accent); }
+
+        .stat-label {
+            color: #8892b0;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .recent-scans {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .recent-scans h2 {
+            color: var(--accent);
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .scans-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .scans-table th,
+        .scans-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .scans-table th {
+            background: rgba(2, 12, 27, 0.7);
+            color: var(--secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+
+        .scans-table tr:hover {
+            background: rgba(100, 255, 218, 0.05);
+        }
+
+        .result-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-badge.defective {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .result-badge.non-defective {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .confidence-score {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .no-scans {
+            text-align: center;
+            padding: 50px;
+            color: #8892b0;
+        }
+
+        .no-scans i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--secondary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            color: var(--primary);
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 180, 216, 0.4);
+        }
+
+        .action-btn.secondary {
+            background: transparent;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+        }
+
+        .action-btn.secondary:hover {
+            background: rgba(0, 180, 216, 0.1);
+            color: var(--light);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-nav {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+            }
+
+            .scans-table {
+                font-size: 0.9rem;
+            }
+
+            .scans-table th,
+            .scans-table td {
+                padding: 10px 8px;
+            }
+
+            .action-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
+        <i class="fas fa-sun" id="themeIcon"></i>
+    </button>
+
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="dashboard-nav">
+                <div class="logo">
+                    <i class="fas fa-x-ray"></i>
+                    <div class="logo-text">MedScan AI</div>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">{{ user.username[0].upper() }}</div>
+                    <div>
+                        <div style="font-weight: 600;">{{ user.username }}</div>
+                        <div style="color: #8892b0; font-size: 0.9rem;">{{ user.email }}</div>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline" style="margin-left: 15px;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <h1 style="color: var(--accent); margin-bottom: 40px; font-size: 2.5rem;">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </h1>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <i class="fas fa-x-ray"></i>
+                </div>
+                <div class="stat-value total">{{ stats.total_scans }}</div>
+                <div class="stat-label">Total Scans</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon defective">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-value defective">{{ stats.defective_scans }}</div>
+                <div class="stat-label">Defective Scans</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon normal">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value normal">{{ stats.normal_scans }}</div>
+                <div class="stat-label">Normal Scans</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon accuracy">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <div class="stat-value accuracy">{{ stats.accuracy_rate }}%</div>
+                <div class="stat-label">Accuracy Rate</div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{{ url_for('index') }}#detector" class="action-btn">
+                <i class="fas fa-plus"></i> New Scan
+            </a>
+            <a href="#" class="action-btn secondary" onclick="exportReports()">
+                <i class="fas fa-download"></i> Export Reports
+            </a>
+            <a href="{{ url_for('index') }}" class="action-btn secondary">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+        </div>
+
+        <div class="recent-scans">
+            <h2>
+                <i class="fas fa-history"></i> Recent Scans
+            </h2>
+            
+            {% if recent_scans %}
+            <table class="scans-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Filename</th>
+                        <th>Result</th>
+                        <th>Confidence</th>
+                        <th>Defects</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scan in recent_scans %}
+                    <tr>
+                        <td>{{ scan[7].split(' ')[0] if scan[7] else 'N/A' }}</td>
+                        <td>{{ scan[3] }}</td>
+                        <td>
+                            <span class="result-badge {{ scan[4] }}">
+                                {{ scan[4].replace('-', ' ').title() }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="confidence-score">{{ scan[5] }}%</span>
+                        </td>
+                        <td>{{ scan[6] if scan[6] else 0 }}</td>
+                        <td>
+                            <a href="{{ url_for('generate_report', scan_id=scan[0]) }}" class="btn" style="padding: 6px 12px; font-size: 0.8rem;">
+                                <i class="fas fa-file-pdf"></i> Report
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-scans">
+                <i class="fas fa-x-ray"></i>
+                <h3>No Scans Yet</h3>
+                <p>Start by uploading your first X-ray image for analysis.</p>
+                <a href="{{ url_for('index') }}#detector" class="btn" style="margin-top: 20px;">
+                    <i class="fas fa-upload"></i> Upload X-Ray
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Initialize particles
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 50, density: { enable: true, value_area: 800 } },
+                color: { value: "#00b4d8" },
+                shape: { type: "circle" },
+                opacity: { value: 0.1, random: true },
+                size: { value: 2, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#64ffda",
+                    opacity: 0.05,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1,
+                    direction: "none",
+                    random: true,
+                    straight: false,
+                    out_mode: "out",
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "grab" },
+                    onclick: { enable: true, mode: "push" },
+                    resize: true
+                },
+                modes: {
+                    grab: { distance: 140, line_linked: { opacity: 0.2 } },
+                    push: { particles_nb: 1 }
+                }
+            },
+            retina_detect: true
+        });
+
+        function exportReports() {
+            // Get all scan IDs and generate a comprehensive report
+            const scanRows = document.querySelectorAll('.scans-table tbody tr');
+            if (scanRows.length === 0) {
+                alert('No scans available to export.');
+                return;
+            }
+            
+            // For now, redirect to the first scan's report
+            // In future, could implement bulk export
+            const firstReportLink = document.querySelector('a[href*="generate_report"]');
+            if (firstReportLink) {
+                window.open(firstReportLink.href, '_blank');
+            } else {
+                alert('No reports available to export.');
+            }
+        }
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+
+        // Load saved theme or default to dark
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        setTheme(savedTheme);
+
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = body.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        function setTheme(theme) {
+            if (theme === 'light') {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.className = 'fas fa-moon';
+            } else {
+                body.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-sun';
+            }
+        }
+    </script>
+</body>
+</html>

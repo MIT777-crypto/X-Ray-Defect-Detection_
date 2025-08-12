@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | MedScan AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .admin-header {
+            background: var(--card-bg);
+            padding: 20px 0;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .admin-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .admin-stat-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            transition: var(--transition);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+        }
+
+        .admin-stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .admin-stat-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .admin-stat-icon.users { color: var(--secondary); }
+        .admin-stat-icon.scans { color: var(--accent); }
+        .admin-stat-icon.defective { color: var(--danger); }
+        .admin-stat-icon.normal { color: var(--success); }
+
+        .admin-stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .admin-stat-value.users { color: var(--secondary); }
+        .admin-stat-value.scans { color: var(--accent); }
+        .admin-stat-value.defective { color: var(--danger); }
+        .admin-stat-value.normal { color: var(--success); }
+
+        .admin-stat-label {
+            color: #8892b0;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .admin-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .chart-title {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .admin-tables {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .admin-table-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .admin-table-title {
+            color: var(--accent);
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+            font-size: 0.9rem;
+        }
+
+        .admin-table th {
+            background: rgba(2, 12, 27, 0.7);
+            color: var(--secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.8rem;
+        }
+
+        .admin-table tr:hover {
+            background: rgba(100, 255, 218, 0.05);
+        }
+
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .role-badge.admin {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .role-badge.user {
+            background: rgba(0, 180, 216, 0.2);
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .admin-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            color: var(--primary);
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 180, 216, 0.4);
+        }
+
+        .admin-btn.danger {
+            background: linear-gradient(90deg, var(--danger), #e57373);
+        }
+
+        .admin-btn.secondary {
+            background: transparent;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+        }
+
+        .admin-btn.secondary:hover {
+            background: rgba(0, 180, 216, 0.1);
+            color: var(--light);
+        }
+
+        @media (max-width: 1200px) {
+            .admin-charts {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-tables {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-nav {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .admin-stats {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+            }
+
+            .admin-table {
+                font-size: 0.8rem;
+            }
+
+            .admin-table th,
+            .admin-table td {
+                padding: 8px 6px;
+            }
+
+            .admin-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
+        <i class="fas fa-sun" id="themeIcon"></i>
+    </button>
+
+    <div class="admin-header">
+        <div class="container">
+            <div class="admin-nav">
+                <div class="logo">
+                    <i class="fas fa-x-ray"></i>
+                    <div class="logo-text">MedScan AI - Admin Panel</div>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" style="background: linear-gradient(45deg, var(--danger), #e57373);">A</div>
+                    <div>
+                        <div style="font-weight: 600;">{{ user.username }}</div>
+                        <div style="color: #8892b0; font-size: 0.9rem;">Administrator</div>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline" style="margin-left: 15px;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-content">
+        <h1 style="color: var(--accent); margin-bottom: 40px; font-size: 2.5rem;">
+            <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+        </h1>
+
+        <div class="admin-stats">
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon users">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="admin-stat-value users">{{ stats.total_users }}</div>
+                <div class="admin-stat-label">Total Users</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon scans">
+                    <i class="fas fa-x-ray"></i>
+                </div>
+                <div class="admin-stat-value scans">{{ stats.total_scans }}</div>
+                <div class="admin-stat-label">Total Scans</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon defective">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="admin-stat-value defective">{{ stats.defective_scans }}</div>
+                <div class="admin-stat-label">Defective Scans</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon normal">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="admin-stat-value normal">{{ stats.normal_scans }}</div>
+                <div class="admin-stat-label">Normal Scans</div>
+            </div>
+        </div>
+
+        <div class="admin-charts">
+            <div class="chart-container">
+                <h3 class="chart-title">Scan Results Distribution</h3>
+                <canvas id="resultsChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">Monthly Scan Trends</h3>
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="admin-actions">
+            <a href="{{ url_for('index') }}" class="admin-btn secondary">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+            <button class="admin-btn" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> Refresh Data
+            </button>
+            <button class="admin-btn" onclick="exportAnalytics()">
+                <i class="fas fa-download"></i> Export Analytics
+            </button>
+            <button class="admin-btn danger" onclick="clearOldData()">
+                <i class="fas fa-trash"></i> Clear Old Data
+            </button>
+        </div>
+
+        <div class="admin-tables">
+            <div class="admin-table-container">
+                <h3 class="admin-table-title">
+                    <i class="fas fa-users"></i> Recent Users
+                </h3>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in recent_users %}
+                        <tr>
+                            <td>{{ user[1] }}</td>
+                            <td>{{ user[2] }}</td>
+                            <td>
+                                <span class="role-badge {{ user[4] if user[4] else 'user' }}">
+                                    {{ user[4] if user[4] else 'user' }}
+                                </span>
+                            </td>
+                            <td>{{ user[3].split(' ')[0] if user[3] else 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="admin-table-container">
+                <h3 class="admin-table-title">
+                    <i class="fas fa-history"></i> Recent Scans
+                </h3>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Result</th>
+                            <th>Confidence</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for scan in recent_scans %}
+                        <tr>
+                            <td>{{ scan[9] }}</td>
+                            <td>
+                                <span class="result-badge {{ scan[4] }}">
+                                    {{ scan[4].replace('-', ' ').title() }}
+                                </span>
+                            </td>
+                            <td>{{ scan[5] }}%</td>
+                            <td>{{ scan[7].split(' ')[0] if scan[7] else 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Initialize particles
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 30, density: { enable: true, value_area: 800 } },
+                color: { value: "#00b4d8" },
+                shape: { type: "circle" },
+                opacity: { value: 0.1, random: true },
+                size: { value: 2, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#64ffda",
+                    opacity: 0.05,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1,
+                    direction: "none",
+                    random: true,
+                    straight: false,
+                    out_mode: "out",
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "grab" },
+                    onclick: { enable: true, mode: "push" },
+                    resize: true
+                },
+                modes: {
+                    grab: { distance: 140, line_linked: { opacity: 0.2 } },
+                    push: { particles_nb: 1 }
+                }
+            },
+            retina_detect: true
+        });
+
+        // Initialize charts
+        const resultsCtx = document.getElementById('resultsChart').getContext('2d');
+        const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+
+        // Results pie chart
+        new Chart(resultsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Normal Scans', 'Defective Scans'],
+                datasets: [{
+                    data: [{{ stats.normal_scans }}, {{ stats.defective_scans }}],
+                    backgroundColor: ['#4caf50', '#f44336'],
+                    borderWidth: 2,
+                    borderColor: '#0a192f'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ccd6f6'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Monthly trends chart
+        const monthlyData = {{ monthly_stats | tojsonfilter }};
+        const months = monthlyData.map(item => item[0]);
+        const totalScans = monthlyData.map(item => item[1]);
+        const defectiveScans = monthlyData.map(item => item[2]);
+
+        new Chart(trendsCtx, {
+            type: 'line',
+            data: {
+                labels: months.reverse(),
+                datasets: [{
+                    label: 'Total Scans',
+                    data: totalScans.reverse(),
+                    borderColor: '#00b4d8',
+                    backgroundColor: 'rgba(0, 180, 216, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Defective Scans',
+                    data: defectiveScans.reverse(),
+                    borderColor: '#f44336',
+                    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        ticks: {
+                            color: '#ccd6f6'
+                        },
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#ccd6f6'
+                        },
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ccd6f6'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Admin functions
+        function refreshData() {
+            window.location.reload();
+        }
+
+        function exportAnalytics() {
+            alert('Analytics export functionality will be implemented soon!');
+        }
+
+        function clearOldData() {
+            if (confirm('Are you sure you want to clear old data? This action cannot be undone.')) {
+                alert('Clear old data functionality will be implemented soon!');
+            }
+        }
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+
+        // Load saved theme or default to dark
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        setTheme(savedTheme);
+
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = body.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        function setTheme(theme) {
+            if (theme === 'light') {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.className = 'fas fa-moon';
+            } else {
+                body.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-sun';
+            }
+        }
+    </script>
+</body>
+</html>

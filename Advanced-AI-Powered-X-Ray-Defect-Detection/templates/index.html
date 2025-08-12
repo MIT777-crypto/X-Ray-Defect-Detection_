@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedScan AI | Advanced X-Ray Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Particles Background -->
+    <div id="particles-js"></div>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
+        <i class="fas fa-sun" id="themeIcon"></i>
+    </button>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <i class="fas fa-x-ray"></i>
+                    <div class="logo-text">MedScan AI</div>
+                </div>
+                <div class="nav-links">
+                    <a href="#home" class="active">Home</a>
+                    <a href="#about">About</a>
+                    <a href="#benefits">Medical Benefits</a>
+                    <a href="#help">Help</a>
+                    <a href="#team">Our Team</a>
+                    <a href="#contact">Contact</a>
+                    {% if user %}
+                        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                        {% if user.username == 'admin' %}
+                            <a href="{{ url_for('admin_panel') }}">Admin</a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}">Login</a>
+                        <a href="{{ url_for('register') }}">Sign Up</a>
+                    {% endif %}
+                </div>
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Advanced AI-Powered <span>X-Ray Defect Detection</span></h1>
+                <p>Our cutting-edge AI technology analyzes X-ray images with 99.99% accuracy to detect defects and abnormalities, assisting medical professionals in making faster and more accurate diagnoses.</p>
+                <div class="hero-btns">
+                    <a href="#detector" class="btn">Scan an X-Ray</a>
+                    <a href="#about" class="btn btn-outline">Learn More</a>
+                </div>
+            </div>
+        </div>
+        <!-- Removed brain image and animation background -->
+    </section>
+
+    <!-- X-Ray Detector Section -->
+    <section id="detector">
+        <div class="container">
+            <div class="section-title">
+                <h2>X-Ray Defect Detection</h2>
+            </div>
+            <div class="detector-container">
+                <div class="upload-area">
+                    <div class="upload-box" id="dropZone">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h3>Upload X-Ray Image</h3>
+                        <p>Drag & drop or click to upload your X-ray image (JPG, PNG)</p>
+                        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                        <button class="btn" onclick="document.getElementById('fileInput').click()">Select File</button>
+                    </div>
+                                            <div class="upload-info">
+                        <p><i class="fas fa-info-circle"></i> Our AI detects fractures, tumors, infections and other abnormalities with 99.99% accuracy.</p>
+                        {% if not user %}
+                        <p style="margin-top: 15px; color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> <a href="{{ url_for('register') }}" style="color: var(--accent);">Sign up</a> to save your scan history and access detailed reports.</p>
+                        <p style="margin-top: 10px; font-size: 0.9rem; color: #8892b0;"><i class="fas fa-info-circle"></i> Demo: Create <a href="#" onclick="createAdmin()" style="color: var(--secondary);">admin account</a> for full features</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="result-area">
+                    <div class="image-container">
+                        <div class="placeholder-text">
+                            <i class="fas fa-x-ray"></i>
+                            <p>Your X-ray preview will appear here</p>
+                        </div>
+                        <img id="xrayImage" alt="X-Ray Preview">
+                        <div class="defect-overlay" id="defectOverlay"></div>
+                    </div>
+                    <div class="result-container">
+                        <h3 class="result-title">Analysis Result</h3>
+                        <div class="result-value" id="resultValue">Waiting for scan...</div>
+                        <div class="confidence" id="confidence">Upload an X-ray to begin analysis</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="container">
+            <div class="section-title">
+                <h2>About Our Technology</h2>
+            </div>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>Revolutionizing Medical Diagnostics</h3>
+                    <p>After completing 6 years of rigorous medical education, doctors still require significant time and resources to accurately analyze X-rays. This process is not only time-consuming but also costly for both medical professionals and patients.</p>
+                    <p>MedScan AI leverages advanced deep learning algorithms to analyze X-ray images in seconds, detecting defects and abnormalities with unprecedented accuracy. Our technology provides medical professionals with a powerful diagnostic tool that saves time, reduces costs, and improves patient outcomes.</p>
+                    <p>By automating the initial analysis, we allow doctors to focus on treatment planning and patient care, while ensuring that potential issues are never overlooked.</p>
+                    
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-value">99.99%</div>
+                            <div class="stat-label">Accuracy Rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">10x</div>
+                            <div class="stat-label">Faster Diagnosis</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">5000+</div>
+                            <div class="stat-label">Scans Processed</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <div style="background: var(--card-bg); border-radius: 15px; height: 400px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(100, 255, 218, 0.1);">
+                        <i class="fas fa-brain" style="font-size: 5rem; color: var(--accent);"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Medical Benefits Section -->
+    <section id="benefits">
+        <div class="container">
+            <div class="section-title">
+                <h2>Medical Benefits</h2>
+            </div>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <i class="fas fa-clock benefit-icon"></i>
+                    <h3>Rapid Diagnosis</h3>
+                    <p>Reduces diagnosis time from hours to seconds, enabling faster treatment decisions and improved patient outcomes.</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-search-plus benefit-icon"></i>
+                    <h3>Early Detection</h3>
+                    <p>Identifies subtle abnormalities that might be missed by the human eye, enabling earlier intervention and treatment.</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-money-bill-wave benefit-icon"></i>
+                    <h3>Cost Reduction</h3>
+                    <p>Lowers healthcare costs by reducing the need for repeat scans and minimizing diagnostic errors.</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-user-md benefit-icon"></i>
+                    <h3>Physician Support</h3>
+                    <p>Assists healthcare professionals by providing a reliable second opinion, reducing workload and stress.</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-lungs benefit-icon"></i>
+                    <h3>Comprehensive Analysis</h3>
+                    <p>Simultaneously checks for multiple conditions including fractures, tumors, infections, and pneumothorax.</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-file-medical benefit-icon"></i>
+                    <h3>Standardized Reporting</h3>
+                    <p>Generates consistent, standardized reports that can be integrated with electronic health record systems.</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-globe benefit-icon"></i>
+                    <h3>Global Accessibility</h3>
+                    <p>Makes expert-level diagnostic capabilities available to remote and underserved areas worldwide.</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-heartbeat benefit-icon"></i>
+                    <h3>Improved Patient Care</h3>
+                    <p>Enables more timely and accurate treatments, leading to better patient recovery rates and outcomes.</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-chart-line benefit-icon"></i>
+                    <h3>Data-Driven Insights</h3>
+                    <p>Provides valuable analytics for medical research and population health management.</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-shield-alt benefit-icon"></i>
+                    <h3>Reduced Radiation Exposure</h3>
+                    <p>Minimizes the need for repeat scans, thereby reducing patients' cumulative radiation exposure.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Help Section -->
+    <section id="help">
+        <div class="container">
+            <div class="section-title">
+                <h2>How to Use Our System</h2>
+            </div>
+            <div class="help-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Upload Your X-Ray</h3>
+                        <p>Click the "Select File" button or drag and drop your X-ray image onto the upload area. We accept JPG, PNG, and DICOM formats.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>AI Analysis</h3>
+                        <p>Our advanced AI algorithms will analyze your X-ray image, scanning for fractures, tumors, infections, and other abnormalities with 99.99% accuracy.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Review Results</h3>
+                        <p>View the analysis results which will clearly indicate if the X-ray is defective or non-defective, with highlighted areas of concern.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Consult a Professional</h3>
+                        <p>Share the results with your healthcare provider. Remember, our system is a diagnostic aid and not a replacement for professional medical advice.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section id="team">
+        <div class="container">
+            <div class="section-title">
+                <h2>Our Team</h2>
+            </div>
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="member-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="member-name">Mit Dabhi</h3>
+                    <div class="member-role">Backend Development</div>
+                    <p style="margin:8px 0 12px;color:#8892b0">Designs secure APIs, database schemas, authentication, and performance tuning for Flask backend.</p>
+                    <div class="social-links">
+                        <a href="https://github.com/mitdabhi" target="_blank"><i class="fab fa-github"></i></a>
+                        <a href="mailto:mitdabhi835@gmail.com"><i class="fas fa-envelope"></i></a>
+                        <a href="https://www.linkedin.com/in/mit-dabhi-78285b377?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="member-name">Meet Mayani</h3>
+                    <div class="member-role">Backend Development</div>
+                    <p style="margin:8px 0 12px;color:#8892b0">Implements AI inference pipeline, file handling, PDF reports, and email notifications.</p>
+                    <div class="social-links">
+                        <a href="https://github.com/meetmayani" target="_blank"><i class="fab fa-github"></i></a>
+                        <a href="mailto:meetmayani2006@gmail.com"><i class="fas fa-envelope"></i></a>
+                        <a href="https://www.linkedin.com/in/meet-mayani-169137327?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="member-name">Sneh Dhameliya</h3>
+                    <div class="member-role">Frontend & UI/UX Design</div>
+                    <p style="margin:8px 0 12px;color:#8892b0">Builds responsive UI, animations, accessibility, and mobile navigation.</p>
+                    <div class="social-links">
+                        <a href="https://linkedin.com/in/snehdhameliya" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        <a href="mailto:snehdhameliya2006@gmail.com"><i class="fas fa-envelope"></i></a>
+                    </div>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="member-name">Daksh Tejani</h3>
+                    <div class="member-role">Debugging & Testing</div>
+                    <p style="margin:8px 0 12px;color:#8892b0">Ensures quality via testing, bug triage, and performance regression checks.</p>
+                    <div class="social-links">
+                        <a href="https://linkedin.com/in/dakshtejani" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        <a href="mailto:dktejani2006.dk@gmail.com"><i class="fas fa-envelope"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <div class="container">
+            <div class="section-title">
+                <h2>Contact Us</h2>
+            </div>
+            <div class="contact-container">
+                <div class="contact-info">
+                    <div class="contact-card">
+                        <h3>Get In Touch</h3>
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i class="fab fa-linkedin contact-icon"></i>
+                                <div class="contact-text">
+                                    <strong>LinkedIn</strong><br>
+                                    <a href="https://www.linkedin.com/in/meet-mayani-169137327?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank">Connect with us</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-envelope contact-icon"></i>
+                                <div class="contact-text">
+                                    <strong>Email</strong><br>
+                                    <a href="mailto:meetmayani2006@gmail.com">meetmayani2006@gmail.com</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-phone contact-icon"></i>
+                                <div class="contact-text">
+                                    <strong>Phone</strong><br>
+                                    <a href="tel:+919328546818">+91 93285 46818</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt contact-icon"></i>
+                                <div class="contact-text">
+                                    <strong>Location</strong><br>
+                                    Bhavnagar, Gujarat
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form id="feedbackForm">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Your Message</label>
+                            <textarea id="message" required></textarea>
+                        </div>
+                        <button type="submit" class="btn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">MedScan AI</div>
+                <div class="footer-links">
+                    <a href="#home">Home</a>
+                    <a href="#about">About</a>
+                    <a href="#benefits">Benefits</a>
+                    <a href="#team">Team</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="copyright">
+                    &copy; 2023 MedScan AI. All rights reserved. | Designed with ❤️ for better healthcare
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
